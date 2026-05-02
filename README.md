@@ -9,8 +9,8 @@ I didn’t want to just build a basic todo app — I wanted something that feels
 
 🌐 Live Demo
 
-Frontend: https://your-frontend-url
-Backend API: https://your-backend-url
+Frontend: refreshing-compassion-production-1fed.up.railway.app
+Backend API: workzen-production.up.railway.app
 
 Demo Accounts:
 
