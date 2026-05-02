@@ -224,8 +224,8 @@ I wanted to build something that:
 
 🚢 Deployment
 
-Backend → Railway / Render
-Frontend → Vercel / Netlify
+Backend → Railway 
+Frontend → Railway
 
 --------------------------------------------------
 
