@@ -12,7 +12,11 @@ const app = express();
 
 // ─── CORS ─────────────────────────────────────────────────────────────
 app.use(cors({
-  origin: process.env.FRONTEND_URL || '*',
+  origin: [
+    'http://localhost:5173',
+    'https://work-zen-flame.vercel.app',
+    process.env.FRONTEND_URL
+  ],
   allowedHeaders: ['Authorization', 'Content-Type'],
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   credentials: true,
