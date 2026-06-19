@@ -15,7 +15,7 @@ router.patch('/bulk', adminMiddleware, c.bulkAction);
 router.get('/:id',            c.getTaskById);
 router.put('/:id',            c.updateTask);
 router.delete('/:id',         adminMiddleware, c.deleteTask);
-router.patch('/:id/status',   c.updateStatus);
+router.patch('/:id/status',   c.updateStatus); 
 router.patch('/:id/reassign', adminMiddleware, c.reassignTask);
 
 // ─── Comments ──────────────────────────────────────────────────────────
