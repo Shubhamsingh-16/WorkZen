@@ -1,6 +1,7 @@
 require('dotenv').config();
-const express = require('express');
-const cors = require('cors');
+const express    = require('express');
+const cors       = require('cors');
+const cookieParser = require('cookie-parser');
 
 const authRoutes    = require('./routes/auth.routes');
 const adminRoutes   = require('./routes/admin.routes');
@@ -25,6 +26,7 @@ app.use(cors({
 // ─── Body Parsing ──────────────────────────────────────────────────────
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 // ─── Health Check ─────────────────────────────────────────────────────
 app.get('/health', (req, res) => {

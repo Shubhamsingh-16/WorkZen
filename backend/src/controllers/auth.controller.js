@@ -10,6 +10,14 @@ const signToken = (user) =>
     { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
   );
 
+// Cookie options — httpOnly prevents JS access (XSS protection)
+const cookieOptions = () => ({
+  httpOnly: true,
+  sameSite: 'strict',
+  secure: process.env.NODE_ENV === 'production', // HTTPS-only in prod, plain HTTP in dev
+  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in ms
+});
+
 exports.signup = async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -27,7 +35,8 @@ exports.signup = async (req, res) => {
     await logActivity({ action: 'USER_REGISTERED', entityType: 'USER', entityId: user.id, userId: user.id });
 
     const { password: _, ...safe } = user;
-    res.status(201).json({ token: signToken(user), user: safe });
+    res.cookie('token', signToken(user), cookieOptions());
+    res.status(201).json({ user: safe });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Signup failed.' });
@@ -53,7 +62,8 @@ exports.login = async (req, res) => {
     await logActivity({ action: 'USER_LOGGED_IN', entityType: 'USER', entityId: user.id, userId: user.id });
 
     const { password: _, ...safe } = user;
-    res.json({ token: signToken(user), user: safe });
+    res.cookie('token', signToken(user), cookieOptions());
+    res.json({ user: safe });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Login failed.' });
@@ -61,6 +71,6 @@ exports.login = async (req, res) => {
 };
 
 exports.logout = async (req, res) => {
-  // Stateless JWT — client must delete the token.
+  res.clearCookie('token', { httpOnly: true, sameSite: 'strict', secure: process.env.NODE_ENV === 'production' });
   res.json({ message: 'Logged out successfully.' });
 };

@@ -12,8 +12,8 @@ export function AuthProvider({ children }) {
   const login = async (email, password) => {
     setLoading(true);
     try {
+      // Token is now set as an httpOnly cookie by the server — not in the response body
       const { data } = await api.post('/api/auth/login', { email, password });
-      localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
       setUser(data.user);
       return data;
@@ -24,15 +24,18 @@ export function AuthProvider({ children }) {
     setLoading(true);
     try {
       const { data } = await api.post('/api/auth/signup', { name, email, password });
-      localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
       setUser(data.user);
       return data;
     } finally { setLoading(false); }
   };
 
-  const logout = useCallback(() => {
-    localStorage.clear();
+  const logout = useCallback(async () => {
+    try {
+      // Ask the server to clear the httpOnly cookie — JS cannot do this itself
+      await api.post('/api/auth/logout');
+    } catch { /* ignore network errors on logout */ }
+    localStorage.removeItem('user');
     setUser(null);
     window.location.href = '/login';
   }, []);
@@ -51,3 +54,4 @@ export const useAuth = () => {
   if (!ctx) throw new Error('useAuth must be inside AuthProvider');
   return ctx;
 };
+

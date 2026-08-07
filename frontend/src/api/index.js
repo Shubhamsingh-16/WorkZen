@@ -3,21 +3,17 @@ import axios from 'axios';
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3001',
   headers: { 'Content-Type': 'application/json' },
-});
-
-// ── Request interceptor — attach JWT ─────────────────────────────────
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
-  if (token) config.headers.Authorization = `Bearer ${token}`;
-  return config;
+  // Send the httpOnly cookie on every request (cross-origin included)
+  withCredentials: true,
 });
 
 // ── Response interceptor — handle 401 ────────────────────────────────
+// Token is now in an httpOnly cookie — no localStorage to clear
 api.interceptors.response.use(
   (res) => res,
   (err) => {
     if (err.response?.status === 401) {
-      localStorage.clear();
+      localStorage.removeItem('user');
       window.location.href = '/login';
     }
     return Promise.reject(err);

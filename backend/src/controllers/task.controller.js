@@ -43,6 +43,16 @@ exports.createTask = async (req, res) => {
     if (!title)     return res.status(400).json({ error: 'title is required.' });
     if (!projectId) return res.status(400).json({ error: 'projectId is required.' });
 
+    // Non-admins must be a member of the target project
+    if (req.user.role !== 'ADMIN') {
+      const membership = await prisma.projectMember.findUnique({
+        where: { projectId_userId: { projectId, userId: req.user.id } },
+      });
+      if (!membership) {
+        return res.status(403).json({ error: 'You are not a member of this project.' });
+      }
+    }
+
     const task = await prisma.task.create({
       data: {
         title, description,
@@ -140,6 +150,11 @@ exports.updateTask = async (req, res) => {
     if (req.user.role !== 'ADMIN' && existing.assignedToId !== req.user.id)
       return res.status(403).json({ error: 'Access denied.' });
 
+    // Only admins may reassign tasks — members editing their own task cannot change assignedToId
+    if (assignedToId !== undefined && req.user.role !== 'ADMIN') {
+      return res.status(403).json({ error: 'Only admins can reassign tasks. Use your profile actions instead.' });
+    }
+
     const task = await prisma.task.update({
       where: { id: req.params.id },
       data: {
@@ -148,7 +163,7 @@ exports.updateTask = async (req, res) => {
         ...(priority     !== undefined && { priority }),
         ...(status       !== undefined && { status }),
         ...(dueDate      !== undefined && { dueDate: dueDate ? new Date(dueDate) : null }),
-        ...(assignedToId !== undefined && { assignedToId: assignedToId || null }),
+        ...(req.user.role === 'ADMIN' && assignedToId !== undefined && { assignedToId: assignedToId || null }),
       },
       include: {
         project:    { select: { id: true, name: true } },
@@ -218,9 +233,32 @@ exports.reassignTask = async (req, res) => {
   }
 };
 
+// Helper: verify the requesting user may access comments on a task
+// Allowed if: ADMIN, or task's assignee, or a member of the task's project
+async function assertCommentAccess(req, res, taskId) {
+  const task = await prisma.task.findUnique({ where: { id: taskId } });
+  if (!task) {
+    res.status(404).json({ error: 'Task not found.' });
+    return null;
+  }
+  if (req.user.role !== 'ADMIN' && task.assignedToId !== req.user.id) {
+    const membership = await prisma.projectMember.findUnique({
+      where: { projectId_userId: { projectId: task.projectId, userId: req.user.id } },
+    });
+    if (!membership) {
+      res.status(403).json({ error: 'Access denied.' });
+      return null;
+    }
+  }
+  return task;
+}
+
 // GET /api/tasks/:id/comments
 exports.getComments = async (req, res) => {
   try {
+    const task = await assertCommentAccess(req, res, req.params.id);
+    if (!task) return; // response already sent
+
     const comments = await prisma.comment.findMany({
       where: { taskId: req.params.id },
       include: { user: { select: { id: true, name: true } } },
@@ -238,8 +276,9 @@ exports.createComment = async (req, res) => {
     const { content } = req.body;
     if (!content?.trim()) return res.status(400).json({ error: 'content is required.' });
 
-    const taskExists = await prisma.task.findUnique({ where: { id: req.params.id } });
-    if (!taskExists) return res.status(404).json({ error: 'Task not found.' });
+    // assertCommentAccess also confirms the task exists
+    const taskExists = await assertCommentAccess(req, res, req.params.id);
+    if (!taskExists) return; // response already sent
 
     const comment = await prisma.comment.create({
       data: { content: content.trim(), taskId: req.params.id, userId: req.user.id },

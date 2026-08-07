@@ -6,12 +6,17 @@ const prisma = require('../utils/prisma');
  */
 const authMiddleware = async (req, res, next) => {
   try {
-    const header = req.headers.authorization;
-    if (!header?.startsWith('Bearer ')) {
+    // Prefer httpOnly cookie; fall back to Authorization header (Postman / legacy clients)
+    let token = req.cookies?.token;
+    if (!token) {
+      const header = req.headers.authorization;
+      if (header?.startsWith('Bearer ')) {
+        token = header.split(' ')[1];
+      }
+    }
+    if (!token) {
       return res.status(401).json({ error: 'No token provided.' });
     }
-
-    const token = header.split(' ')[1];
     let decoded;
     try {
       decoded = jwt.verify(token, process.env.JWT_SECRET);
