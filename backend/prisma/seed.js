@@ -21,16 +21,16 @@ async function main() {
   const memberPwd   = await bcrypt.hash('Member@123', 10);
 
   const admin = await prisma.user.create({
-    data: { name: 'Admin User',    email: 'admin@taskmanager.com',   password: adminPwd,  role: 'ADMIN' },
+    data: { name: 'Admin User',    email: 'admin@workzen.com',   password: adminPwd,  role: 'ADMIN' },
   });
   const alice = await prisma.user.create({
-    data: { name: 'Alice Johnson', email: 'alice@taskmanager.com',   password: memberPwd, role: 'MEMBER' },
+    data: { name: 'Alice Johnson', email: 'alice@workzen.com',   password: memberPwd, role: 'MEMBER' },
   });
   const bob = await prisma.user.create({
-    data: { name: 'Bob Smith',     email: 'bob@taskmanager.com',     password: memberPwd, role: 'MEMBER' },
+    data: { name: 'Bob Smith',     email: 'bob@workzen.com',     password: memberPwd, role: 'MEMBER' },
   });
   const charlie = await prisma.user.create({
-    data: { name: 'Charlie Brown', email: 'charlie@taskmanager.com', password: memberPwd, role: 'MEMBER' },
+    data: { name: 'Charlie Brown', email: 'charlie@workzen.com', password: memberPwd, role: 'MEMBER' },
   });
   console.log('✅ Created 4 users');
 
@@ -243,10 +243,10 @@ async function main() {
   console.log('\n🎉 Seed complete!');
   console.log('──────────────────────────────');
   console.log('Demo Credentials:');
-  console.log('  Admin:   admin@taskmanager.com   / Admin@123');
-  console.log('  Alice:   alice@taskmanager.com   / Member@123');
-  console.log('  Bob:     bob@taskmanager.com     / Member@123');
-  console.log('  Charlie: charlie@taskmanager.com / Member@123');
+  console.log('  Admin:   admin@workzen.com   / Admin@123');
+  console.log('  Alice:   alice@workzen.com   / Member@123');
+  console.log('  Bob:     bob@workzen.com     / Member@123');
+  console.log('  Charlie: charlie@workzen.com / Member@123');
 }
 
 main()
