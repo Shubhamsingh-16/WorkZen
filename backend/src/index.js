@@ -8,7 +8,6 @@ const adminRoutes   = require('./routes/admin.routes');
 const projectRoutes = require('./routes/project.routes');
 const taskRoutes    = require('./routes/task.routes');
 const activityRoutes = require('./routes/activity.routes');
-const seedRoutes     = require('./routes/seed.routes');
 
 const app = express();
 
@@ -40,7 +39,6 @@ app.use('/api/admin',    adminRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/tasks',    taskRoutes);
 app.use('/api/activity', activityRoutes);
-app.use('/api/seed',     seedRoutes);
 
 // ─── 404 Handler ──────────────────────────────────────────────────────
 app.use((req, res) => {
